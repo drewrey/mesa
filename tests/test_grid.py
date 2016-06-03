@@ -6,11 +6,15 @@ import unittest
 from mesa.space import Grid, SingleGrid, MultiGrid
 
 # Initial agent positions for testing
-#              X ---- >
-TEST_GRID = [[0, 1, 0, 1, 0],   # Y
-             [0, 1, 1, 0, 0],   # |
-             [0, 0, 0, 1, 0]]   # V
-
+#              Y ---- >
+# TEST_GRID = [[0, 1, 0, 1, 0],   # Y
+#              [0, 1, 1, 0, 0],   # |
+#              [0, 0, 0, 1, 0]]   # V
+TEST_GRID = [[0, 0, 0],
+             [0, 1, 1],
+             [0, 1, 0],
+             [1, 0, 1],
+             [0, 0, 0]]
 
 class MockAgent(object):
     '''
@@ -32,12 +36,12 @@ class TestBaseGrid(unittest.TestCase):
         '''
         Create a test non-toroidal grid and populate it with Mock Agents
         '''
-        self.grid = Grid(3, 5, self.torus)
+        self.grid = Grid(5, 3, self.torus)
         self.agents = []
         counter = 0
-        for y in range(3):
-            for x in range(5):
-                if TEST_GRID[y][x] == 0:
+        for x in range(5):
+            for y in range(3):
+                if TEST_GRID[x][y] == 0:
                     continue
                 counter += 1
                 # Create and place the mock agent
@@ -51,7 +55,7 @@ class TestBaseGrid(unittest.TestCase):
         '''
         for agent in self.agents:
             x, y = agent.pos
-            assert self.grid[y][x] == agent
+            assert self.grid[x][y] == agent
 
     def test_cell_agent_reporting(self):
         '''
@@ -181,12 +185,12 @@ class TestSingleGrid(unittest.TestCase):
         '''
         Create a test non-toroidal grid and populate it with Mock Agents
         '''
-        self.grid = SingleGrid(3, 5, True)
+        self.grid = SingleGrid(5, 3, True)
         self.agents = []
         counter = 0
-        for y in range(3):
-            for x in range(5):
-                if TEST_GRID[y][x] == 0:
+        for x in range(5):
+            for y in range(5):
+                if TEST_GRID[x][y] == 0:
                     continue
                 counter += 1
                 # Create and place the mock agent
@@ -244,9 +248,9 @@ class TestMultiGrid(unittest.TestCase):
         self.grid = MultiGrid(3, 5, self.torus)
         self.agents = []
         counter = 0
-        for y in range(3):
-            for x in range(5):
-                for i in range(TEST_MULTIGRID[y][x]):
+        for x in range(3):
+            for y in range(5):
+                for i in range(TEST_MULTIGRID[x][y]):
                     counter += 1
                     # Create and place the mock agent
                     a = MockAgent(counter, None)
@@ -259,7 +263,7 @@ class TestMultiGrid(unittest.TestCase):
         '''
         for agent in self.agents:
             x, y = agent.pos
-            assert agent in self.grid[y][x]
+            assert agent in self.grid[x][y]
 
     def test_neighbors(self):
         '''

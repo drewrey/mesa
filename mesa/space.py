@@ -42,9 +42,9 @@ class Grid(object):
     '''
     Base class for a square grid.
 
-    Grid cells are indexed by [y][x], where [0][0] is assumed to be -- top-left
-    and [height-1][width-1] is the bottom-right. If a grid is toroidal, the top
-    and bottom, and left and right, edges wrap to each other
+    Grid cells are indexed by [x][y], where [0][0] is assumed to be -- top-left
+    and [width-1][height-1] is the bottom-right. If a grid is toroidal, the
+    left & right and top & bottom edges wrap to each other.
 
     Properties:
         width, height: The grid's width and height.
@@ -58,25 +58,25 @@ class Grid(object):
         get_cell_list_contents: Returns the contents of a list of cells
             ((x,y) tuples)
     '''
-    def __init__(self, height, width, torus):
+    def __init__(self, width, height, torus):
         '''
         Create a new grid.
 
         Args:
-            height, width: The height and width of the grid
+            width, height: The dimensions of the grid
             torus: Boolean whether the grid wraps or not.
         '''
-        self.height = height
         self.width = width
+        self.height = height
         self.torus = torus
 
         self.grid = []
 
-        for y in range(self.height):
-            row = []
-            for x in range(self.width):
-                row.append(self.default_val())
-            self.grid.append(row)
+        for x in range(self.width):
+            col = []
+            for y in range(self.height):
+                col.append(self.default_val())
+            self.grid.append(col)
 
     @staticmethod
     def default_val():
@@ -99,7 +99,7 @@ class Grid(object):
         """
         for row in range(self.height):
             for col in range(self.width):
-                yield self.grid[row][col], col, row  # agent, x, y
+                yield self.grid[col][row], col, row  # agent, x, y
 
     def neighbor_iter(self, pos, moore=True):
         """
@@ -262,7 +262,7 @@ class Grid(object):
             A iterator of the contents of the cells identified in cell_list
         '''
         return (
-            self[y][x] for x, y in cell_list if not self.is_cell_empty((x, y)))
+            self[x][y] for x, y in cell_list if not self.is_cell_empty((x, y)))
 
     @accept_tuple_argument
     def get_cell_list_contents(self, cell_list):
@@ -300,18 +300,18 @@ class Grid(object):
         Place the agent at the correct location.
         '''
         x, y = pos
-        self.grid[y][x] = agent
+        self.grid[x][y] = agent
 
     def _remove_agent(self, pos, agent):
         '''
         Remove the agent from the given location.
         '''
         x, y = pos
-        self.grid[y][x] = None
+        self.grid[x][y] = None
 
     def is_cell_empty(self, pos):
         x, y = pos
-        return True if self.grid[y][x] == self.default_val() else False
+        return True if self.grid[x][y] == self.default_val() else False
 
 
 class SingleGrid(Grid):
@@ -320,15 +320,15 @@ class SingleGrid(Grid):
     '''
     empties = []
 
-    def __init__(self, height, width, torus):
+    def __init__(self, width, height, torus):
         '''
         Create a new single-item grid.
 
         Args:
-            height, width: The height and width of the grid
+            width, height: The width and height of the grid
             torus: Boolean whether the grid wraps or not.
         '''
-        super().__init__(height, width, torus)
+        super().__init__(width, height, torus)
         # Add all cells to the empties list.
         self.empties = list(itertools.product(
                             *(range(self.width), range(self.height))))
@@ -397,8 +397,8 @@ class MultiGrid(Grid):
     '''
     Grid where each cell can contain more than one object.
 
-    Grid cells are indexed by [y][x], where [0][0] is assumed to be -- top-left
-    and [height-1][width-1] is the bottom-right. If a grid is toroidal, the top
+    Grid cells are indexed by [x][y], where [0][0] is assumed to be -- top-left
+    and [width-1][height-1] is the bottom-right. If a grid is toroidal, the top
     and bottom, and left and right, edges wrap to each other.
 
     Each grid cell holds a set object.
@@ -425,14 +425,14 @@ class MultiGrid(Grid):
         Place the agent at the correct location.
         '''
         x, y = pos
-        self.grid[y][x].add(agent)
+        self.grid[x][y].add(agent)
 
     def _remove_agent(self, pos, agent):
         '''
         Remove the agent from the given location.
         '''
         x, y = pos
-        self.grid[y][x].remove(agent)
+        self.grid[x][y].remove(agent)
 
     @accept_tuple_argument
     def iter_cell_list_contents(self, cell_list):
@@ -444,7 +444,7 @@ class MultiGrid(Grid):
             A iterator of the contents of the cells identified in cell_list
         '''
         return itertools.chain.from_iterable(
-            self[y][x] for x, y in cell_list if not self.is_cell_empty((x, y)))
+            self[x][y] for x, y in cell_list if not self.is_cell_empty((x, y)))
 
 
 class ContinuousSpace(object):
@@ -486,7 +486,7 @@ class ContinuousSpace(object):
         self.cell_width = (self.x_max - self.x_min) / grid_width
         self.cell_height = (self.y_max - self.y_min) / grid_height
 
-        self._grid = MultiGrid(grid_height, grid_width, torus)
+        self._grid = MultiGrid(grid_width, grid_height, torus)
 
     def place_agent(self, agent, pos):
         '''
